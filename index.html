@@ -1,126 +1,347 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Subway Surf Clone</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      margin: 0;
-      padding: 0;
-    }
-    canvas {
-      display: block;
-      margin: 0 auto;
-    }
-    #score, #level {
-      text-align: center;
-      font-size: 24px;
-      font-weight: bold;
-      margin: 10px 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Burger Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #gameCanvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        #score {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+            text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        #restartButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <h1>Subway Surf Clone</h1>
-  <canvas id="gameCanvas" width="360" height="640"></canvas>
-  <div>
-    <p id="score">Score: 0</p>
-    <p id="level">Level: 1</p>
-  </div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="score">Hamburguesas: 0</div>
+    <div class="game-over" id="gameOver">
+        <h2>¡Juego Terminado!</h2>
+        <p>Puntuación: <span id="finalScore">0</span></p>
+        <button id="restartButton">Jugar de nuevo</button>
+    </div>
 
-  <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Configurar tamaño del canvas
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
-    let player = {
-      x: canvas.width / 2,
-      y: canvas.height - 50,
-      width: 50,
-      height: 50,
-      speed: 5
-    };
+        // Variables del juego
+        let gameState = {
+            score: 0,
+            speed: 5,
+            isGameOver: false,
+            laneWidth: canvas.width / 3,
+            currentLane: 1, // 0=izquierda, 1=centro, 2=derecha
+            isJumping: false,
+            isSliding: false
+        };
 
-    let obstacles = [];
-    let score = 0;
-    let level = 1;
+        class Player {
+            constructor() {
+                this.width = 50;
+                this.height = 100;
+                this.x = canvas.width / 2 - this.width / 2;
+                this.y = canvas.height - this.height - 50;
+                this.jumpForce = 0;
+                this.gravity = 0.6;
+            }
 
-    function drawPlayer() {
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-    }
+            draw() {
+                if (gameState.isSliding) {
+                    ctx.fillStyle = '#ff4444';
+                    ctx.fillRect(this.x, this.y + this.height/2, this.width, this.height/2);
+                } else {
+                    ctx.fillStyle = '#ff4444';
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                }
+            }
 
-    function drawObstacles() {
-      obstacles.forEach(obstacle => {
-        ctx.fillRect(obstacle.x, obstacle.y, 30, 30);
-      });
-    }
+            update() {
+                // Manejar salto
+                if (gameState.isJumping) {
+                    this.y += this.jumpForce;
+                    this.jumpForce += this.gravity;
 
-    function updateGame() {
-      // Move player left/right
-      if (keys.ArrowLeft && player.x > 0) {
-        player.x -= player.speed;
-      }
-      if (keys.ArrowRight && player.x < canvas.width - player.width) {
-        player.x += player.speed;
-      }
+                    if (this.y > canvas.height - this.height - 50) {
+                        this.y = canvas.height - this.height - 50;
+                        gameState.isJumping = false;
+                        this.jumpForce = 0;
+                    }
+                }
 
-      // Generate and move obstacles
-      if (Math.random() < 0.05) {
-        obstacles.push({
-          x: Math.floor(Math.random() * (canvas.width - 30)),
-          y: 0,
-          speed: level
+                // Actualizar posición horizontal
+                const targetX = (gameState.laneWidth * gameState.currentLane + gameState.laneWidth/2) - this.width/2;
+                this.x += (targetX - this.x) * 0.1;
+            }
+
+            jump() {
+                if (!gameState.isJumping) {
+                    gameState.isJumping = true;
+                    this.jumpForce = -15;
+                }
+            }
+
+            slide() {
+                if (!gameState.isSliding) {
+                    gameState.isSliding = true;
+                    setTimeout(() => {
+                        gameState.isSliding = false;
+                    }, 1000);
+                }
+            }
+        }
+
+        class Hamburger {
+            constructor() {
+                this.width = 30;
+                this.height = 30;
+                this.lane = Math.floor(Math.random() * 3);
+                this.x = gameState.laneWidth * this.lane + gameState.laneWidth/2 - this.width/2;
+                this.z = 1000; // Distancia desde el jugador
+            }
+
+            draw() {
+                const perspective = this.z / 1000;
+                const scaledWidth = this.width / perspective;
+                const scaledHeight = this.height / perspective;
+                const screenX = this.x / perspective;
+                const screenY = canvas.height/2 - scaledHeight/perspective;
+
+                ctx.fillStyle = '#ffbb00';
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, scaledWidth/2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            update() {
+                this.z -= gameState.speed;
+                return this.z < 0;
+            }
+        }
+
+        class Obstacle {
+            constructor() {
+                this.width = 60;
+                this.height = 100;
+                this.lane = Math.floor(Math.random() * 3);
+                this.x = gameState.laneWidth * this.lane + gameState.laneWidth/2 - this.width/2;
+                this.z = 1000; // Distancia desde el jugador
+            }
+
+            draw() {
+                const perspective = this.z / 1000;
+                const scaledWidth = this.width / perspective;
+                const scaledHeight = this.height / perspective;
+                const screenX = this.x / perspective;
+                const screenY = canvas.height/2 - scaledHeight/perspective;
+
+                ctx.fillStyle = '#666';
+                ctx.fillRect(screenX - scaledWidth/2, screenY, scaledWidth, scaledHeight);
+            }
+
+            update() {
+                this.z -= gameState.speed;
+                return this.z < 0;
+            }
+        }
+
+        const player = new Player();
+        let hamburgers = [];
+        let obstacles = [];
+
+        // Control táctil
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
         });
-      }
-      obstacles.forEach(obstacle => {
-        obstacle.y += obstacle.speed;
-        if (obstacle.y > canvas.height) {
-          obstacles.splice(obstacles.indexOf(obstacle), 1);
-          score += 50;
-          if (score >= level * 1000) {
-            level++;
-            player.speed += 1;
-          }
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touchX = e.touches[0].clientX;
+            const touchY = e.touches[0].clientY;
+            
+            const diffX = touchX - touchStartX;
+            const diffY = touchY - touchStartY;
+
+            // Detectar dirección del swipe
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                // Swipe horizontal
+                if (diffX > 50 && gameState.currentLane < 2) {
+                    gameState.currentLane++;
+                    touchStartX = touchX;
+                } else if (diffX < -50 && gameState.currentLane > 0) {
+                    gameState.currentLane--;
+                    touchStartX = touchX;
+                }
+            } else {
+                // Swipe vertical
+                if (diffY < -50) {
+                    player.jump();
+                    touchStartY = touchY;
+                } else if (diffY > 50) {
+                    player.slide();
+                    touchStartY = touchY;
+                }
+            }
+        });
+
+        function spawnHamburger() {
+            if (Math.random() < 0.02) {
+                hamburgers.push(new Hamburger());
+            }
         }
-      });
 
-      // Check for collisions
-      obstacles.forEach((obstacle, index) => {
-        if (
-          player.x < obstacle.x + 30 &&
-          player.x + player.width > obstacle.x &&
-          player.y < obstacle.y + 30 &&
-          player.y + player.height > obstacle.y
-        ) {
-          obstacles.splice(index, 1);
-          score = 0;
-          level = 1;
-          player.speed = 5;
+        function spawnObstacle() {
+            if (Math.random() < 0.01) {
+                obstacles.push(new Obstacle());
+            }
         }
-      });
 
-      // Update UI
-      document.getElementById('score').textContent = `Score: ${score}`;
-      document.getElementById('level').textContent = `Level: ${level}`;
-    }
+        function checkCollisions() {
+            // Colisión con hamburguesas
+            hamburgers = hamburgers.filter(hamburger => {
+                if (hamburger.z < 100 && Math.abs(hamburger.lane - gameState.currentLane) < 0.5) {
+                    gameState.score++;
+                    document.getElementById('score').textContent = `Hamburguesas: ${gameState.score}`;
+                    return false;
+                }
+                return true;
+            });
 
-    let keys = {};
-    document.addEventListener('keydown', (e) => {
-      keys[e.key] = true;
-    });
-    document.addEventListener('keyup', (e) => {
-      keys[e.key] = false;
-    });
+            // Colisión con obstáculos
+            obstacles.forEach(obstacle => {
+                if (obstacle.z < 100 && Math.abs(obstacle.lane - gameState.currentLane) < 0.5) {
+                    if (!gameState.isJumping && !gameState.isSliding) {
+                        gameOver();
+                    }
+                }
+            });
+        }
 
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawPlayer();
-      drawObstacles();
-      updateGame();
-      requestAnimationFrame(gameLoop);
-    }
+        function gameOver() {
+            gameState.isGameOver = true;
+            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('finalScore').textContent = gameState.score;
+        }
 
-    gameLoop();
-  </script>
+        function resetGame() {
+            gameState = {
+                score: 0,
+                speed: 5,
+                isGameOver: false,
+                laneWidth: canvas.width / 3,
+                currentLane: 1,
+                isJumping: false,
+                isSliding: false
+            };
+            hamburgers = [];
+            obstacles = [];
+            document.getElementById('score').textContent = 'Hamburguesas: 0';
+            document.getElementById('gameOver').style.display = 'none';
+            gameLoop();
+        }
+
+        document.getElementById('restartButton').addEventListener('click', resetGame);
+
+        function drawRoad() {
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, canvas.height/2, canvas.width, canvas.height/2);
+            
+            // Líneas de carril
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            for (let i = 0; i <= 3; i++) {
+                const x = (canvas.width / 3) * i;
+                ctx.beginPath();
+                ctx.moveTo(x, canvas.height/2);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+        }
+
+        function gameLoop() {
+            if (gameState.isGameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawRoad();
+            
+            spawnHamburger();
+            spawnObstacle();
+            
+            hamburgers = hamburgers.filter(hamburger => !hamburger.update());
+            obstacles = obstacles.filter(obstacle => !obstacle.update());
+            
+            hamburgers.forEach(hamburger => hamburger.draw());
+            obstacles.forEach(obstacle => obstacle.draw());
+            
+            player.update();
+            player.draw();
+            
+            checkCollisions();
+            
+            gameState.speed += 0.001;
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
 </body>
 </html>
