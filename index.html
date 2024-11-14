@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Running Hamburger Game</title>
+  <title>Subway Surf Clone</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -22,7 +22,7 @@
   </style>
 </head>
 <body>
-  <h1>Running Hamburger Game</h1>
+  <h1>Subway Surf Clone</h1>
   <canvas id="gameCanvas" width="360" height="640"></canvas>
   <div>
     <p id="score">Score: 0</p>
@@ -41,7 +41,7 @@
       speed: 5
     };
 
-    let hamburgers = [];
+    let obstacles = [];
     let score = 0;
     let level = 1;
 
@@ -49,9 +49,9 @@
       ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
-    function drawHamburgers() {
-      hamburgers.forEach(hamburger => {
-        ctx.fillRect(hamburger.x, hamburger.y, 30, 20);
+    function drawObstacles() {
+      obstacles.forEach(obstacle => {
+        ctx.fillRect(obstacle.x, obstacle.y, 30, 30);
       });
     }
 
@@ -64,35 +64,38 @@
         player.x += player.speed;
       }
 
-      // Generate and move hamburgers
+      // Generate and move obstacles
       if (Math.random() < 0.05) {
-        hamburgers.push({
+        obstacles.push({
           x: Math.floor(Math.random() * (canvas.width - 30)),
           y: 0,
           speed: level
         });
       }
-      hamburgers.forEach(hamburger => {
-        hamburger.y += hamburger.speed;
-        if (hamburger.y > canvas.height) {
-          hamburgers.splice(hamburgers.indexOf(hamburger), 1);
+      obstacles.forEach(obstacle => {
+        obstacle.y += obstacle.speed;
+        if (obstacle.y > canvas.height) {
+          obstacles.splice(obstacles.indexOf(obstacle), 1);
+          score += 50;
+          if (score >= level * 1000) {
+            level++;
+            player.speed += 1;
+          }
         }
       });
 
       // Check for collisions
-      hamburgers.forEach((hamburger, index) => {
+      obstacles.forEach((obstacle, index) => {
         if (
-          player.x < hamburger.x + 30 &&
-          player.x + player.width > hamburger.x &&
-          player.y < hamburger.y + 20 &&
-          player.y + player.height > hamburger.y
+          player.x < obstacle.x + 30 &&
+          player.x + player.width > obstacle.x &&
+          player.y < obstacle.y + 30 &&
+          player.y + player.height > obstacle.y
         ) {
-          hamburgers.splice(index, 1);
-          score += 100;
-          if (score >= level * 300) {
-            level++;
-            player.speed += 1;
-          }
+          obstacles.splice(index, 1);
+          score = 0;
+          level = 1;
+          player.speed = 5;
         }
       });
 
@@ -112,7 +115,7 @@
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawPlayer();
-      drawHamburgers();
+      drawObstacles();
       updateGame();
       requestAnimationFrame(gameLoop);
     }
