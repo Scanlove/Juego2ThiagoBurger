@@ -26,8 +26,8 @@ let gameState = {
 };
 
 const LANES = [-100, 0, 100];
-const FOOD_EMOJIS = ['🍔', '🌭', '🍗', '🥩'];
 const LEVEL_COLORS = ['#000000', '#FF0000', '#FFFF00', '#87CEEB', '#008000'];
+const FOOD_EMOJI = '🍽';
 
 // Configuración del canvas
 function resizeCanvas() {
@@ -46,13 +46,10 @@ class Plate {
     }
 
     draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.width / 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#fff';
-        ctx.fill();
-        ctx.strokeStyle = '#ddd';
-        ctx.lineWidth = 3;
-        ctx.stroke();
+        // Dibujar el emoji 🍽 como el plato
+        ctx.font = '50px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(FOOD_EMOJI, this.x, this.y);
     }
 
     update(targetLane) {
@@ -67,13 +64,12 @@ class Food {
         this.lane = Math.floor(Math.random() * 3);
         this.x = canvas.width / 2 + LANES[this.lane];
         this.y = -50;
-        this.emoji = FOOD_EMOJIS[Math.floor(Math.random() * FOOD_EMOJIS.length)];
     }
 
     draw() {
         ctx.font = '32px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(this.emoji, this.x, this.y);
+        ctx.fillText(FOOD_EMOJI, this.x, this.y);
     }
 
     update() {
