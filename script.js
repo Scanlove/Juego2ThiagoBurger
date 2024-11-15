@@ -37,7 +37,7 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// Clase para el plato
+// Clase para el plato (emoji 🍽)
 class Plate {
     constructor() {
         this.x = canvas.width / 2;
@@ -47,7 +47,7 @@ class Plate {
 
     draw() {
         // Dibujar el emoji 🍽 como el plato
-        ctx.font = '50px Arial';
+        ctx.font = '60px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(FOOD_EMOJI, this.x, this.y);
     }
