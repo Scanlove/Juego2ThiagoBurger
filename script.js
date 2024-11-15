@@ -13,13 +13,15 @@ window.addEventListener('resize', resizeCanvas);
 // Variables del juego
 const LANE_WIDTH = 100;
 const LANES = [-LANE_WIDTH, 0, LANE_WIDTH];
-
+const LEVEL_COLORS = ['#000000', '#FF0000', '#FFFF00', '#87CEEB', '#008000'];
 let gameState = {
     score: 0,
     speed: 5,
     isGameOver: false,
     currentLane: 1,
-    roadOffset: 0
+    roadOffset: 0,
+    level: 1,
+    backgroundColor: LEVEL_COLORS[0]
 };
 
 class Plate {
@@ -53,32 +55,23 @@ class Plate {
     }
 }
 
-class Hamburger {
+class Food {
     constructor() {
         this.lane = Math.floor(Math.random() * 3);
         this.x = canvas.width / 2 + LANES[this.lane];
         this.y = -50;
         this.width = 40;
         this.height = 40;
+
+        // Seleccionar un emoji de alimento aleatorio
+        const emojis = ['🍔', '🌭', '🍗', '🥩'];
+        this.emoji = emojis[Math.floor(Math.random() * emojis.length)];
     }
 
     draw() {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-
-        // Dibujar hamburguesa (círculo marrón)
-        ctx.beginPath();
-        ctx.arc(0, 0, this.width / 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#8B4513';
-        ctx.fill();
-
-        // Detalles de la hamburguesa
-        ctx.fillStyle = '#FFD700';
-        ctx.fillRect(-15, -5, 30, 3);
-        ctx.fillStyle = '#228B22';
-        ctx.fillRect(-12, 5, 24, 2);
-
-        ctx.restore();
+        ctx.font = '32px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.emoji, this.x, this.y + 16);
     }
 
     update() {
@@ -114,7 +107,7 @@ class Obstacle {
 }
 
 const plate = new Plate();
-let hamburgers = [];
+let foods = [];
 let obstacles = [];
 
 // Control táctil
@@ -146,28 +139,22 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-function drawRoad() {
-    ctx.fillStyle = '#666';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Líneas de la carretera
-    ctx.strokeStyle = '#fff';
-    ctx.setLineDash([20, 20]);
-    ctx.lineWidth = 5;
-
-    // Dibujar líneas con efecto de movimiento
-    for (let i = -1; i <= 1; i++) {
-        ctx.beginPath();
-        ctx.moveTo(canvas.width / 2 + (i * LANE_WIDTH), 0);
-        ctx.lineTo(canvas.width / 2 + (i * LANE_WIDTH), canvas.height);
-        ctx.stroke();
+function updateLevel() {
+    const newLevel = Math.floor(gameState.score / 400) + 1;
+    if (newLevel !== gameState.level) {
+        gameState.level = newLevel;
+        gameState.backgroundColor = LEVEL_COLORS[(gameState.level - 1) % LEVEL_COLORS.length];
     }
-    ctx.setLineDash([]);
 }
 
-function spawnHamburger() {
+function drawBackground() {
+    ctx.fillStyle = gameState.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function spawnFood() {
     if (Math.random() < 0.02) {
-        hamburgers.push(new Hamburger());
+        foods.push(new Food());
     }
 }
 
@@ -185,18 +172,19 @@ function checkCollisions() {
         height: plate.height
     };
 
-    // Colisión con hamburguesas
-    hamburgers = hamburgers.filter(hamburger => {
-        const hamburgerHitbox = {
-            x: hamburger.x - hamburger.width / 2,
-            y: hamburger.y - hamburger.height / 2,
-            width: hamburger.width,
-            height: hamburger.height
+    // Colisión con alimentos
+    foods = foods.filter(food => {
+        const foodHitbox = {
+            x: food.x - food.width / 2,
+            y: food.y - food.height / 2,
+            width: food.width,
+            height: food.height
         };
 
-        if (checkCollision(plateHitbox, hamburgerHitbox)) {
-            gameState.score++;
+        if (checkCollision(plateHitbox, foodHitbox)) {
+            gameState.score += 5;
             document.getElementById('score').textContent = `🍔 ${gameState.score}`;
+            document.getElementById('level').textContent = `Nivel = ${gameState.level}`;
             return false;
         }
         return true;
@@ -236,11 +224,14 @@ function resetGame() {
         speed: 5,
         isGameOver: false,
         currentLane: 1,
-        roadOffset: 0
+        roadOffset: 0,
+        level: 1,
+        backgroundColor: LEVEL_COLORS[0]
     };
-    hamburgers = [];
+    foods = [];
     obstacles = [];
     document.getElementById('score').textContent = '🍔 0';
+    document.getElementById('level').textContent = 'Nivel = 1';
     document.getElementById('gameOver').style.display = 'none';
     gameLoop();
 }
@@ -250,21 +241,14 @@ document.getElementById('restartButton').addEventListener('click', resetGame);
 function gameLoop() {
     if (gameState.isGameOver) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
 
-    // Actualizar offset de la carretera
-    gameState.roadOffset = (gameState.roadOffset + gameState.speed) % 40;
-    ctx.save();
-    ctx.translate(0, gameState.roadOffset);
-    drawRoad();
-    ctx.restore();
-
-    spawnHamburger();
+    spawnFood();
     spawnObstacle();
 
-    // Actualizar y dibujar hamburguesas
-    hamburgers = hamburgers.filter(hamburger => !hamburger.update());
-    hamburgers.forEach(hamburger => hamburger.draw());
+    // Actualizar y dibujar alimentos
+    foods = foods.filter(food => !food.update());
+    foods.forEach(food => food.draw());
 
     // Actualizar y dibujar obstáculos
     obstacles = obstacles.filter(obstacle => !obstacle.update());
@@ -274,6 +258,7 @@ function gameLoop() {
     plate.draw();
 
     checkCollisions();
+    updateLevel();
 
     // Aumentar velocidad gradualmente
     gameState.speed += 0.001;
