@@ -39,7 +39,7 @@ window.addEventListener('resize', resizeCanvas);
 
 // Cargar imagen central
 const img = new Image();
-img.src = 'foto1.png'; // Asegúrate de que esta imagen esté en el mismo directorio
+img.src = 'foto1.png';
 
 // Dibujar fondo con imagen central y caminos
 function drawBackground() {
@@ -260,10 +260,11 @@ function gameLoop() {
     checkCollisions();
 
     // Cambiar nivel
-    if (Math.floor(gameState.score / 400) + 1 !== gameState.level) {
-        gameState.level = Math.floor(gameState.score / 400) + 1;
-        gameState.backgroundColor =
-            LEVEL_COLORS[(gameState.level - 1) % LEVEL_COLORS.length];
+    const currentLevel = Math.floor(gameState.score / 400) + 1;
+    if (currentLevel !== gameState.level) {
+        gameState.level = currentLevel;
+        gameState.backgroundColor = LEVEL_COLORS[(gameState.level - 1) % LEVEL_COLORS.length];
+        gameState.speed += 0.5; // Incremento de velocidad por nivel
         document.getElementById('level').textContent = `Nivel = ${gameState.level}`;
     }
 
