@@ -37,19 +37,36 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// Dibujar fondo con imagen central
+// Cargar imagen central
+const img = new Image();
+img.src = 'foto1.png'; // Asegúrate de que esta imagen esté en el mismo directorio
+
+// Dibujar fondo con imagen central y caminos
 function drawBackground() {
     ctx.fillStyle = gameState.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const img = new Image();
-    img.src = 'foto1.png'; // Asegúrate de que esta imagen esté en el mismo directorio
-    img.onload = () => {
-        const imgSize = Math.min(canvas.width, canvas.height) / 3;
-        ctx.globalAlpha = 0.2; // Transparencia para que no moleste el juego
-        ctx.drawImage(img, canvas.width / 2 - imgSize / 2, canvas.height / 2 - imgSize / 2, imgSize, imgSize);
-        ctx.globalAlpha = 1.0; // Restaurar opacidad
-    };
+    // Dibujar caminos
+    ctx.fillStyle = '#666';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#fff';
+    ctx.setLineDash([20, 20]);
+    ctx.lineWidth = 5;
+
+    for (let i = -1; i <= 1; i++) {
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2 + i * 100, 0);
+        ctx.lineTo(canvas.width / 2 + i * 100, canvas.height);
+        ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Dibujar imagen central con transparencia
+    const imgSize = Math.min(canvas.width, canvas.height) / 3;
+    ctx.globalAlpha = 0.2; // Transparencia para que no moleste el juego
+    ctx.drawImage(img, canvas.width / 2 - imgSize / 2, canvas.height / 2 - imgSize / 2, imgSize, imgSize);
+    ctx.globalAlpha = 1.0; // Restaurar opacidad
 }
 
 // Clase para el plato
@@ -119,24 +136,6 @@ class Obstacle {
 const plate = new Plate();
 let foods = [];
 let obstacles = [];
-
-// Dibujar carretera
-function drawRoad() {
-    ctx.fillStyle = '#666';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.strokeStyle = '#fff';
-    ctx.setLineDash([20, 20]);
-    ctx.lineWidth = 5;
-
-    for (let i = -1; i <= 1; i++) {
-        ctx.beginPath();
-        ctx.moveTo(canvas.width / 2 + i * 100, 0);
-        ctx.lineTo(canvas.width / 2 + i * 100, canvas.height);
-        ctx.stroke();
-    }
-    ctx.setLineDash([]);
-}
 
 // Manejar eventos de teclado
 document.addEventListener('keydown', (e) => {
