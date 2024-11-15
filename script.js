@@ -225,7 +225,7 @@ function checkCollisions() {
     foods = foods.filter((food) => {
         const dist = Math.hypot(food.x - plate.x, food.y - plate.y);
         if (dist < plate.width / 2) {
-            gameState.score += 15; // Cada alimento vale 15 puntos
+            gameState.score += 200; // Cada alimento vale 15 puntos
             document.getElementById('score').textContent = `🍔 ${gameState.score}`;
             return false;
         }
