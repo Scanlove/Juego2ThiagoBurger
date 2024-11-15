@@ -37,6 +37,21 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
+// Dibujar fondo con imagen central
+function drawBackground() {
+    ctx.fillStyle = gameState.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const img = new Image();
+    img.src = 'foto1.png'; // Asegúrate de que esta imagen esté en el mismo directorio
+    img.onload = () => {
+        const imgSize = Math.min(canvas.width, canvas.height) / 3;
+        ctx.globalAlpha = 0.2; // Transparencia para que no moleste el juego
+        ctx.drawImage(img, canvas.width / 2 - imgSize / 2, canvas.height / 2 - imgSize / 2, imgSize, imgSize);
+        ctx.globalAlpha = 1.0; // Restaurar opacidad
+    };
+}
+
 // Clase para el plato
 class Plate {
     constructor() {
@@ -227,10 +242,7 @@ function gameLoop() {
     if (!gameState.isPlaying || gameState.isGameOver) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = gameState.backgroundColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    drawRoad();
+    drawBackground();
 
     plate.update(gameState.currentLane);
     plate.draw();
