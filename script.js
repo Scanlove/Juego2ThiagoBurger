@@ -93,7 +93,94 @@ class Food {
 const plate = new Plate();
 let foods = [];
 
-// Función principal del juego
+// Manejar eventos de teclado
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' && gameState.currentLane > 0) {
+        gameState.currentLane--;
+    } else if (e.key === 'ArrowRight' && gameState.currentLane < 2) {
+        gameState.currentLane++;
+    }
+});
+
+// Función para iniciar el juego
+startButton.addEventListener('click', () => {
+    startScreen.style.display = 'none';
+    gameState.isPlaying = true;
+    gameMusic.play();
+    gameLoop();
+});
+
+// Función para finalizar el juego
+function gameOver() {
+    gameState.isGameOver = true;
+    gameState.isPlaying = false;
+    gameMusic.pause();
+    document.getElementById('finalScore').textContent = gameState.score;
+    gameOverScreen.style.display = 'block';
+
+    // Guardar detalles del último juego
+    const now = new Date();
+    lastGame.date = now.toLocaleDateString();
+    lastGame.time = now.toLocaleTimeString();
+    lastGame.score = gameState.score;
+}
+
+// Mostrar detalles del último juego
+showDetailsButton.addEventListener('click', () => {
+    if (gameDetails.style.display === 'none') {
+        const date = lastGame.date || 'N/A';
+        const time = lastGame.time || 'N/A';
+        const score = lastGame.score || 0;
+        gameDetails.innerHTML = `
+            <p>Fecha: ${date}</p>
+            <p>Hora: ${time}</p>
+            <p>Puntaje: ${score}</p>
+        `;
+        gameDetails.style.display = 'block';
+    } else {
+        gameDetails.style.display = 'none';
+    }
+});
+
+// Función para reiniciar el juego
+restartButton.addEventListener('click', () => {
+    gameState = {
+        score: 0,
+        speed: 5,
+        isGameOver: false,
+        currentLane: 1,
+        level: 1,
+        backgroundColor: LEVEL_COLORS[0],
+        isPlaying: true
+    };
+    foods = [];
+    gameOverScreen.style.display = 'none';
+    gameMusic.currentTime = 0;
+    gameMusic.play();
+    gameLoop();
+});
+
+// Generar alimentos
+function spawnFoods() {
+    if (Math.random() < 0.02) {
+        foods.push(new Food());
+    }
+}
+
+// Verificar colisiones
+function checkCollisions() {
+    foods = foods.filter((food) => {
+        const dist = Math.hypot(food.x - plate.x, food.y - plate.y);
+        if (dist < 50) {
+            gameState.score += 5;
+            document.getElementById('score').textContent = `🍔 ${gameState.score}`;
+            return false;
+        }
+        return true;
+    });
+}
+
+// Ciclo principal del juego
 function gameLoop() {
     if (!gameState.isPlaying || gameState.isGameOver) return;
 
@@ -108,13 +195,16 @@ function gameLoop() {
         food.draw();
     });
 
+    spawnFoods();
+    checkCollisions();
+
+    // Cambiar nivel
+    if (Math.floor(gameState.score / 400) + 1 !== gameState.level) {
+        gameState.level = Math.floor(gameState.score / 400) + 1;
+        gameState.backgroundColor =
+            LEVEL_COLORS[(gameState.level - 1) % LEVEL_COLORS.length];
+        document.getElementById('level').textContent = `Nivel = ${gameState.level}`;
+    }
+
     requestAnimationFrame(gameLoop);
 }
-
-// Iniciar juego
-startButton.addEventListener('click', () => {
-    startScreen.style.display = 'none';
-    gameState.isPlaying = true;
-    gameMusic.play();
-    gameLoop();
-});
