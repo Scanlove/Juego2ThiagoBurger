@@ -152,6 +152,24 @@ function drawBackground() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+function drawRoad() {
+    // Dibujar carretera gris
+    ctx.fillStyle = '#666';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Líneas blancas de la carretera
+    ctx.strokeStyle = '#fff';
+    ctx.setLineDash([20, 20]);
+    ctx.lineWidth = 5;
+    for (let i = -1; i <= 1; i++) {
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2 + i * LANE_WIDTH, 0);
+        ctx.lineTo(canvas.width / 2 + i * LANE_WIDTH, canvas.height);
+        ctx.stroke();
+    }
+    ctx.setLineDash([]);
+}
+
 function spawnFood() {
     if (Math.random() < 0.02) {
         foods.push(new Food());
@@ -242,6 +260,7 @@ function gameLoop() {
     if (gameState.isGameOver) return;
 
     drawBackground();
+    drawRoad();
 
     spawnFood();
     spawnObstacle();
