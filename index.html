@@ -7,35 +7,22 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Canvas para el juego -->
     <canvas id="gameCanvas"></canvas>
-
-    <!-- Puntaje y Nivel -->
     <div id="score">🍔 0</div>
     <div id="level">Nivel = 1</div>
-
-    <!-- Pantalla de inicio -->
     <div id="startScreen">
         <button id="startButton">JUGAR CON THIAGO BURGER</button>
     </div>
-
-    <!-- Pantalla de juego terminado -->
     <div class="game-over" id="gameOver">
         <h2>¡Juego Terminado!</h2>
         <p>Hamburguesas recolectadas: <span id="finalScore">0</span></p>
         <button id="restartButton">Jugar de nuevo</button>
     </div>
-
-    <!-- Botón para mostrar detalles del último juego -->
     <div id="detailsButton">
         <button id="showDetails">🕒 Detalles del último juego</button>
         <div id="gameDetails" style="display: none;"></div>
     </div>
-
-    <!-- Música de fondo -->
-    <audio id="gameMusic" src="audio1.mp3" loop></audio>
-
-    <!-- Script del juego -->
+    <audio id="gameMusic" src="juego.mp3" loop></audio>
     <script src="script.js"></script>
 </body>
 </html>
