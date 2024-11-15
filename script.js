@@ -21,7 +21,7 @@ let gameState = {
     currentLane: 1,
     roadOffset: 0,
     level: 1,
-    backgroundColor: '#000000',
+    backgroundColor: '#000000', // El color inicial del nivel 1
     foodSpawnRate: 0.02, // Frecuencia inicial de alimentos
     obstacleSpawnRate: 0.01, // Frecuencia inicial de obstáculos
     isPlaying: false
@@ -29,7 +29,7 @@ let gameState = {
 
 const LANES = [-100, 0, 100];
 const FOOD_EMOJIS = ['🍔', '🌭', '🍗', '🥩'];
-const LEVEL_COLORS = ['#000000', '#FF0000', '#FFFF00', '#87CEEB', '#008000'];
+const LEVEL_COLORS = ['#000000', '#FF0000', '#FFFF00', '#87CEEB', '#008000']; // Colores de fondo para cada nivel
 
 // Configuración del canvas
 function resizeCanvas() {
@@ -43,12 +43,13 @@ window.addEventListener('resize', resizeCanvas);
 const img = new Image();
 img.src = 'foto1.png';
 
-// Dibujar fondo con imagen central y caminos
+// Dibujar fondo con color del nivel y caminos
 function drawBackground() {
+    // Dibujar el fondo con el color actual
     ctx.fillStyle = gameState.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Dibujar caminos
+    // Dibujar caminos encima del fondo
     ctx.fillStyle = '#666';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -225,7 +226,7 @@ function checkCollisions() {
     foods = foods.filter((food) => {
         const dist = Math.hypot(food.x - plate.x, food.y - plate.y);
         if (dist < plate.width / 2) {
-            gameState.score += 200; // Cada alimento vale 15 puntos
+            gameState.score += 15; // Cada alimento vale 15 puntos
             document.getElementById('score').textContent = `🍔 ${gameState.score}`;
             return false;
         }
