@@ -1,3 +1,4 @@
+/* General */
 * {
     margin: 0;
     padding: 0;
@@ -10,12 +11,14 @@ body {
     background: #87CEEB;
 }
 
+/* Canvas */
 #gameCanvas {
     width: 100vw;
     height: 100vh;
     display: block;
 }
 
+/* Puntaje y Nivel */
 #score {
     position: fixed;
     top: 20px;
@@ -23,15 +26,50 @@ body {
     color: #fff;
     font-size: 24px;
     font-family: Arial, sans-serif;
-    text-shadow: 2px 2px 2px rgba(0,0,0,0.5);
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
 }
 
+#level {
+    position: fixed;
+    top: 60px;
+    left: 20px;
+    color: #fff;
+    font-size: 20px;
+    font-family: Arial, sans-serif;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Pantalla de inicio */
+#startScreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+#startButton {
+    font-size: 20px;
+    padding: 15px 30px;
+    background-color: #ff4500;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+#startButton:hover {
+    background-color: #e03e00;
+}
+
+/* Pantalla de juego terminado */
 .game-over {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.8);
     color: #fff;
     padding: 20px;
     border-radius: 10px;
@@ -49,4 +87,41 @@ body {
     color: white;
     cursor: pointer;
     font-size: 16px;
+}
+
+#restartButton:hover {
+    background: #3e8e41;
+}
+
+/* Botón de detalles */
+#detailsButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    text-align: center;
+}
+
+#showDetails {
+    font-size: 14px;
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#showDetails:hover {
+    background-color: #3e8e41;
+}
+
+#gameDetails {
+    font-size: 14px;
+    color: #fff;
+    margin-top: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    display: none;
 }
