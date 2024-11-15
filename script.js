@@ -8,12 +8,6 @@ const gameMusic = document.getElementById('gameMusic');
 const showDetailsButton = document.getElementById('showDetails');
 const gameDetails = document.getElementById('gameDetails');
 
-let lastGame = {
-    date: null,
-    time: null,
-    score: 0
-};
-
 let gameState = {
     score: 0,
     speed: 5,
@@ -25,8 +19,8 @@ let gameState = {
 };
 
 const LANES = [-100, 0, 100];
-const FOOD_EMOJIS = ['🍔', '🌭', '🍗', '🥩'];
 const LEVEL_COLORS = ['#000000', '#FF0000', '#FFFF00', '#87CEEB', '#008000'];
+const FOOD_EMOJIS = ['🍔', '🌭', '🍗', '🥩'];
 
 // Configuración del canvas
 function resizeCanvas() {
@@ -36,13 +30,13 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// Dibujar fondo con foto central
+// Dibujar fondo con imagen
 function drawBackground() {
     ctx.fillStyle = gameState.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const img = new Image();
-    img.src = 'foto1.png'; // Asegúrate de que esta imagen esté en el mismo directorio
+    img.src = 'foto1.png';
     img.onload = () => {
         const imgSize = Math.min(canvas.width, canvas.height) / 3;
         ctx.globalAlpha = 0.2;
@@ -51,7 +45,7 @@ function drawBackground() {
     };
 }
 
-// Clase para el plato (emoji 🍽)
+// Clase para el plato
 class Plate {
     constructor() {
         this.x = canvas.width / 2;
@@ -70,7 +64,7 @@ class Plate {
     }
 }
 
-// Clase para los alimentos
+// Clase para alimentos
 class Food {
     constructor() {
         this.lane = Math.floor(Math.random() * 3);
@@ -90,10 +84,29 @@ class Food {
     }
 }
 
+// Clase para obstáculos
+class Obstacle {
+    constructor() {
+        this.lane = Math.floor(Math.random() * 3);
+        this.x = canvas.width / 2 + LANES[this.lane];
+        this.y = -50;
+    }
+
+    draw() {
+        ctx.fillStyle = '#FF4444';
+        ctx.fillRect(this.x - 25, this.y, 50, 50);
+    }
+
+    update() {
+        this.y += gameState.speed;
+    }
+}
+
 const plate = new Plate();
 let foods = [];
+let obstacles = [];
 
-// Manejar eventos de teclado
+// Manejo del teclado
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft' && gameState.currentLane > 0) {
         gameState.currentLane--;
@@ -102,85 +115,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Función para iniciar el juego
-startButton.addEventListener('click', () => {
-    startScreen.style.display = 'none';
-    gameState.isPlaying = true;
-    gameMusic.play();
-    gameLoop();
-});
-
-// Función para finalizar el juego
-function gameOver() {
-    gameState.isGameOver = true;
-    gameState.isPlaying = false;
-    gameMusic.pause();
-    document.getElementById('finalScore').textContent = gameState.score;
-    gameOverScreen.style.display = 'block';
-
-    // Guardar detalles del último juego
-    const now = new Date();
-    lastGame.date = now.toLocaleDateString();
-    lastGame.time = now.toLocaleTimeString();
-    lastGame.score = gameState.score;
-}
-
-// Mostrar detalles del último juego
-showDetailsButton.addEventListener('click', () => {
-    if (gameDetails.style.display === 'none') {
-        const date = lastGame.date || 'N/A';
-        const time = lastGame.time || 'N/A';
-        const score = lastGame.score || 0;
-        gameDetails.innerHTML = `
-            <p>Fecha: ${date}</p>
-            <p>Hora: ${time}</p>
-            <p>Puntaje: ${score}</p>
-        `;
-        gameDetails.style.display = 'block';
-    } else {
-        gameDetails.style.display = 'none';
-    }
-});
-
-// Función para reiniciar el juego
-restartButton.addEventListener('click', () => {
-    gameState = {
-        score: 0,
-        speed: 5,
-        isGameOver: false,
-        currentLane: 1,
-        level: 1,
-        backgroundColor: LEVEL_COLORS[0],
-        isPlaying: true
-    };
-    foods = [];
-    gameOverScreen.style.display = 'none';
-    gameMusic.currentTime = 0;
-    gameMusic.play();
-    gameLoop();
-});
-
-// Generar alimentos
-function spawnFoods() {
-    if (Math.random() < 0.02) {
-        foods.push(new Food());
-    }
-}
-
-// Verificar colisiones
-function checkCollisions() {
-    foods = foods.filter((food) => {
-        const dist = Math.hypot(food.x - plate.x, food.y - plate.y);
-        if (dist < 50) {
-            gameState.score += 5;
-            document.getElementById('score').textContent = `🍔 ${gameState.score}`;
-            return false;
-        }
-        return true;
-    });
-}
-
-// Ciclo principal del juego
+// Función principal del juego
 function gameLoop() {
     if (!gameState.isPlaying || gameState.isGameOver) return;
 
@@ -195,16 +130,17 @@ function gameLoop() {
         food.draw();
     });
 
-    spawnFoods();
-    checkCollisions();
-
-    // Cambiar nivel
-    if (Math.floor(gameState.score / 400) + 1 !== gameState.level) {
-        gameState.level = Math.floor(gameState.score / 400) + 1;
-        gameState.backgroundColor =
-            LEVEL_COLORS[(gameState.level - 1) % LEVEL_COLORS.length];
-        document.getElementById('level').textContent = `Nivel = ${gameState.level}`;
-    }
+    obstacles.forEach((obstacle) => {
+        obstacle.update();
+        obstacle.draw();
+    });
 
     requestAnimationFrame(gameLoop);
 }
+
+// Iniciar el juego
+startButton.addEventListener('click', () => {
+    startScreen.style.display = 'none';
+    gameState.isPlaying = true;
+    gameLoop();
+});
