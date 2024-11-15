@@ -22,6 +22,8 @@ let gameState = {
     roadOffset: 0,
     level: 1,
     backgroundColor: '#000000',
+    foodSpawnRate: 0.02, // Frecuencia inicial de alimentos
+    obstacleSpawnRate: 0.01, // Frecuencia inicial de obstáculos
     isPlaying: false
 };
 
@@ -196,6 +198,8 @@ restartButton.addEventListener('click', () => {
         roadOffset: 0,
         level: 1,
         backgroundColor: LEVEL_COLORS[0],
+        foodSpawnRate: 0.02,
+        obstacleSpawnRate: 0.01,
         isPlaying: true
     };
     foods = [];
@@ -208,10 +212,10 @@ restartButton.addEventListener('click', () => {
 
 // Generar alimentos y obstáculos
 function spawnEntities() {
-    if (Math.random() < 0.02) {
+    if (Math.random() < gameState.foodSpawnRate) {
         foods.push(new Food());
     }
-    if (Math.random() < 0.01) {
+    if (Math.random() < gameState.obstacleSpawnRate) {
         obstacles.push(new Obstacle());
     }
 }
@@ -221,7 +225,7 @@ function checkCollisions() {
     foods = foods.filter((food) => {
         const dist = Math.hypot(food.x - plate.x, food.y - plate.y);
         if (dist < plate.width / 2) {
-            gameState.score += 100;
+            gameState.score += 15; // Cada alimento vale 15 puntos
             document.getElementById('score').textContent = `🍔 ${gameState.score}`;
             return false;
         }
@@ -265,6 +269,8 @@ function gameLoop() {
         gameState.level = currentLevel;
         gameState.backgroundColor = LEVEL_COLORS[(gameState.level - 1) % LEVEL_COLORS.length];
         gameState.speed += 0.5; // Incremento de velocidad por nivel
+        gameState.foodSpawnRate += 0.005; // Aumentar la frecuencia de alimentos
+        gameState.obstacleSpawnRate += 0.002; // Aumentar la frecuencia de obstáculos
         document.getElementById('level').textContent = `Nivel = ${gameState.level}`;
     }
 
