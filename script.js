@@ -21,17 +21,16 @@ let gameState = {
     currentLane: 1,
     roadOffset: 0,
     level: 1,
-    backgroundColor: '#000000', // El color inicial del nivel 1
-    foodSpawnRate: 0.02, // Frecuencia inicial de alimentos
-    obstacleSpawnRate: 0.01, // Frecuencia inicial de obstáculos
+    backgroundColor: '#000000',
+    foodSpawnRate: 0.02,
+    obstacleSpawnRate: 0.01,
     isPlaying: false
 };
 
 const LANES = [-100, 0, 100];
 const FOOD_EMOJIS = ['🍔', '🌭', '🍗', '🥩'];
-const LEVEL_COLORS = ['#000000', '#FF0000', '#FFFF00', '#87CEEB', '#008000']; // Colores de fondo para cada nivel
+const LEVEL_COLORS = ['#000000', '#FF0000', '#FFFF00', '#87CEEB', '#008000'];
 
-// Configuración del canvas
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -39,17 +38,13 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// Cargar imagen central
 const img = new Image();
 img.src = 'foto1.png';
 
-// Dibujar fondo con color del nivel y caminos
 function drawBackground() {
-    // Dibujar el fondo con el color actual
     ctx.fillStyle = gameState.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Dibujar caminos encima del fondo
     ctx.fillStyle = '#666';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -65,14 +60,12 @@ function drawBackground() {
     }
     ctx.setLineDash([]);
 
-    // Dibujar imagen central con transparencia
     const imgSize = Math.min(canvas.width, canvas.height) / 3;
-    ctx.globalAlpha = 0.2; // Transparencia para que no moleste el juego
+    ctx.globalAlpha = 0.2;
     ctx.drawImage(img, canvas.width / 2 - imgSize / 2, canvas.height / 2 - imgSize / 2, imgSize, imgSize);
-    ctx.globalAlpha = 1.0; // Restaurar opacidad
+    ctx.globalAlpha = 1.0;
 }
 
-// Clase para el plato
 class Plate {
     constructor() {
         this.x = canvas.width / 2;
@@ -96,7 +89,6 @@ class Plate {
     }
 }
 
-// Clase para los alimentos
 class Food {
     constructor() {
         this.lane = Math.floor(Math.random() * 3);
@@ -116,7 +108,6 @@ class Food {
     }
 }
 
-// Clase para los obstáculos
 class Obstacle {
     constructor() {
         this.lane = Math.floor(Math.random() * 3);
@@ -140,7 +131,6 @@ const plate = new Plate();
 let foods = [];
 let obstacles = [];
 
-// Manejar eventos de teclado
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft' && gameState.currentLane > 0) {
         gameState.currentLane--;
@@ -149,7 +139,6 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Iniciar juego
 startButton.addEventListener('click', () => {
     startScreen.style.display = 'none';
     gameState.isPlaying = true;
@@ -157,7 +146,6 @@ startButton.addEventListener('click', () => {
     gameLoop();
 });
 
-// Función para finalizar el juego
 function gameOver() {
     gameState.isGameOver = true;
     gameState.isPlaying = false;
@@ -165,14 +153,12 @@ function gameOver() {
     document.getElementById('finalScore').textContent = gameState.score;
     gameOverScreen.style.display = 'block';
 
-    // Guardar detalles del último juego
     const now = new Date();
     lastGame.date = now.toLocaleDateString();
     lastGame.time = now.toLocaleTimeString();
     lastGame.score = gameState.score;
 }
 
-// Mostrar detalles del último juego
 showDetailsButton.addEventListener('click', () => {
     if (gameDetails.style.display === 'none') {
         const date = lastGame.date || 'N/A';
@@ -189,7 +175,6 @@ showDetailsButton.addEventListener('click', () => {
     }
 });
 
-// Reiniciar juego
 restartButton.addEventListener('click', () => {
     gameState = {
         score: 0,
@@ -211,7 +196,6 @@ restartButton.addEventListener('click', () => {
     gameLoop();
 });
 
-// Generar alimentos y obstáculos
 function spawnEntities() {
     if (Math.random() < gameState.foodSpawnRate) {
         foods.push(new Food());
@@ -221,12 +205,11 @@ function spawnEntities() {
     }
 }
 
-// Verificar colisiones
 function checkCollisions() {
     foods = foods.filter((food) => {
         const dist = Math.hypot(food.x - plate.x, food.y - plate.y);
         if (dist < plate.width / 2) {
-            gameState.score += 15; // Cada alimento vale 15 puntos
+            gameState.score += 15;
             document.getElementById('score').textContent = `🍔 ${gameState.score}`;
             return false;
         }
@@ -241,7 +224,6 @@ function checkCollisions() {
     });
 }
 
-// Ciclo principal del juego
 function gameLoop() {
     if (!gameState.isPlaying || gameState.isGameOver) return;
 
@@ -264,14 +246,13 @@ function gameLoop() {
     spawnEntities();
     checkCollisions();
 
-    // Cambiar nivel
     const currentLevel = Math.floor(gameState.score / 400) + 1;
     if (currentLevel !== gameState.level) {
         gameState.level = currentLevel;
         gameState.backgroundColor = LEVEL_COLORS[(gameState.level - 1) % LEVEL_COLORS.length];
-        gameState.speed += 0.5; // Incremento de velocidad por nivel
-        gameState.foodSpawnRate += 0.005; // Aumentar la frecuencia de alimentos
-        gameState.obstacleSpawnRate += 0.002; // Aumentar la frecuencia de obstáculos
+        gameState.speed += 0.5;
+        gameState.foodSpawnRate += 0.005;
+        gameState.obstacleSpawnRate += 0.002;
         document.getElementById('level').textContent = `Nivel = ${gameState.level}`;
     }
 
