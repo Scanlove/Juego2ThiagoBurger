@@ -154,13 +154,39 @@ function gameOver() {
     gameState.isPlaying = false;
     gameMusic.pause();
     document.getElementById('finalScore').textContent = gameState.score;
+
+    // Determinar si el jugador ganó algo según su puntaje
+    let rewardMessage = '';
+    if (gameState.score >= 3000) {
+        rewardMessage = "🎉 ¡Ganaste un Plato Sorpresa!";
+    } else if (gameState.score >= 2000) {
+        rewardMessage = "🎉 ¡Ganaste un 10% de Descuento!";
+    } else if (gameState.score >= 1500) {
+        rewardMessage = "🏆 ¡Ganaste una Porción de Papas!";
+    } else if (gameState.score >= 800) {
+        rewardMessage = "🏅 ¡Ganaste un Vaso de Refresco!";
+    } else {
+        rewardMessage = "😢 No alcanzaste un premio esta vez. ¡Inténtalo de nuevo!";
+    }
+
+    // Mostrar mensaje de recompensa (si corresponde)
+    const rewardElement = document.createElement('p');
+    rewardElement.textContent = rewardMessage;
+    rewardElement.style.fontSize = '20px';
+    rewardElement.style.color = '#FFD700';
+    rewardElement.style.marginTop = '20px';
+    rewardElement.style.fontWeight = 'bold';
+
+    gameOverScreen.appendChild(rewardElement); // Agregar el mensaje al cuadro de "Juego Terminado"
     gameOverScreen.style.display = 'block';
 
+    // Guardar detalles del último juego
     const now = new Date();
     lastGame.date = now.toLocaleDateString();
     lastGame.time = now.toLocaleTimeString();
     lastGame.score = gameState.score;
 }
+
 
 showDetailsButton.addEventListener('click', () => {
     if (gameDetails.style.display === 'none') {
