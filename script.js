@@ -134,6 +134,7 @@ const plate = new Plate();
 let foods = [];
 let obstacles = [];
 
+// Manejar eventos de teclado
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft' && gameState.currentLane > 0) {
         gameState.currentLane--;
@@ -141,6 +142,19 @@ document.addEventListener('keydown', (e) => {
         gameState.currentLane++;
     }
 });
+
+// Manejar eventos táctiles
+canvas.addEventListener('touchstart', (e) => {
+    const touchX = e.touches[0].clientX;
+
+    // Detectar si el toque fue en la izquierda o derecha de la pantalla
+    if (touchX < canvas.width / 2 && gameState.currentLane > 0) {
+        gameState.currentLane--; // Mover a la izquierda
+    } else if (touchX >= canvas.width / 2 && gameState.currentLane < 2) {
+        gameState.currentLane++; // Mover a la derecha
+    }
+});
+
 
 startButton.addEventListener('click', () => {
     startScreen.style.display = 'none';
