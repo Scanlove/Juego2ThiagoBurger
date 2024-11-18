@@ -42,12 +42,15 @@ const img = new Image();
 img.src = 'foto1.png';
 
 function drawBackground() {
+    // Primero dibujamos el color de fondo según el nivel
     ctx.fillStyle = gameState.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = '#666';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Quitamos esta línea que sobrescribía el color
+    // ctx.fillStyle = '#666';
+    // ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Dibujamos las líneas de la carretera
     ctx.strokeStyle = '#fff';
     ctx.setLineDash([20, 20]);
     ctx.lineWidth = 5;
