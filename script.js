@@ -29,7 +29,7 @@ let gameState = {
 
 const LANES = [-100, 0, 100];
 const FOOD_EMOJIS = ['🍔', '🌭', '🍗', '🥩'];
-const LEVEL_COLORS = ['#000000', '#FF0000', '#FFFF00', '#87CEEB', '#008000'];
+const LEVEL_COLORS = ['#000000', '#1C1C1C', '#0A0A29', '#003300', '#3E2723'];
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
