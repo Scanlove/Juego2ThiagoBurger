@@ -108,6 +108,12 @@ class PowerUp {
     }
 }
 
+function drawBackground() {
+    ctx.fillStyle = LEVEL_COLORS[gameState.level % LEVEL_COLORS.length];
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+
 // Ajustar tamaño del canvas
 function resizeCanvas() {
     canvas.width = window.innerWidth;
