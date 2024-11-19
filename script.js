@@ -254,19 +254,19 @@ function checkCollisions() {
     });
 
     // Colisión con obstáculos
-    gameState.obstacles.forEach((obstacle) => {
-        const dist = Math.hypot(obstacle.x - gameState.plate.x, obstacle.y - gameState.plate.y);
-        if (dist < gameState.plate.width / 2) {
-            if (gameState.shield) {
-                gameState.shield = false;
-            } else {
-                crashSound.play();
-                gameOver();
-            }
+gameState.obstacles = gameState.obstacles.filter((obstacle) => {
+    const dist = Math.hypot(obstacle.x - gameState.plate.x, obstacle.y - gameState.plate.y);
+    if (dist < gameState.plate.width / 2) {
+        if (gameState.shield) {
+            gameState.shield = false;
+            return false;  // Elimina el obstáculo cuando hay escudo
+        } else {
+            crashSound.play();
+            gameOver();
         }
-    });
-}
-
+    }
+    return true;
+});
 // Fin del juego
 function gameOver() {
     gameState.isPlaying = false;
