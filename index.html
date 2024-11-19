@@ -1,38 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Burger Plate Runner</title>
+    <title>🍔 Super Burger Runner 2.0 🎮</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <div id="score">🍔 0</div>
-    <div id="level">Nivel = 1</div>
-    <div id="startScreen">
-        <div id="rewardsInfo">
-            <h2>Premios por puntos:</h2>
-            <ul>
-            
-                <li><strong>800 puntos:</strong> 🏅 Premio Vaso Refresco</li>
-                <li><strong>1500 puntos:</strong> 🏆 Premio Porcion de Papas</li>
-                <li><strong>2000 puntos:</strong> 🎉 Premio 10% Descuento</li>
-                <li><strong>3000 puntos:</strong> 🎉 Premio PlatoSorpresa</li>
-            </ul>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="hud">
+            <div id="score" class="game-stat">🍔 0</div>
+            <div id="level" class="game-stat">Nivel 1</div>
+            <div id="combo" class="game-stat">Combo x1</div>
+            <div id="powerups" class="game-stat"></div>
         </div>
-        <button id="startButton">JUGAR CON THIAGO BURGER</button>
+
+        <div id="startScreen" class="menu-screen">
+            <div class="game-title">
+                <h1>SUPER BURGER</h1>
+                <h2>RUNNER 2.0</h2>
+            </div>
+
+            <div id="rewardsInfo" class="rewards-panel">
+                <h2>🏆 PREMIOS ESPECIALES 🏆</h2>
+                <ul>
+                    <li class="reward-item">
+                        <span class="reward-score">800 pts</span>
+                        <span class="reward-icon">🥤</span>
+                        <span class="reward-name">Vaso Refrescante</span>
+                    </li>
+                    <li class="reward-item">
+                        <span class="reward-score">1500 pts</span>
+                        <span class="reward-icon">🍟</span>
+                        <span class="reward-name">Papas Premium</span>
+                    </li>
+                    <li class="reward-item">
+                        <span class="reward-score">2000 pts</span>
+                        <span class="reward-icon">💫</span>
+                        <span class="reward-name">10% Descuento VIP</span>
+                    </li>
+                    <li class="reward-item">
+                        <span class="reward-score">3000 pts</span>
+                        <span class="reward-icon">🎁</span>
+                        <span class="reward-name">Plato Sorpresa Deluxe</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="power-ups-info">
+                <h3>⚡ POWER-UPS ⚡</h3>
+                <div class="power-up-grid">
+                    <div class="power-up-item">
+                        <span class="power-up-icon">🛡️</span>
+                        <span class="power-up-name">Escudo Protector</span>
+                    </div>
+                    <div class="power-up-item">
+                        <span class="power-up-icon">🧲</span>
+                        <span class="power-up-name">Imán de Comida</span>
+                    </div>
+                    <div class="power-up-item">
+                        <span class="power-up-icon">⚡</span>
+                        <span class="power-up-name">Turbo Velocidad</span>
+                    </div>
+                    <div class="power-up-item">
+                        <span class="power-up-icon">✨</span>
+                        <span class="power-up-name">Multiplicador x2</span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="startButton" class="neon-button">
+                ¡JUGAR AHORA! 🎮
+            </button>
+        </div>
+
+        <div id="gameOver" class="menu-screen game-over">
+            <h2>¡JUEGO TERMINADO!</h2>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-label">Puntuación Final</span>
+                    <span id="finalScore" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Mejor Combo</span>
+                    <span id="maxCombo" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Nivel Alcanzado</span>
+                    <span id="finalLevel" class="stat-value">0</span>
+                </div>
+            </div>
+            <div id="rewardMessage" class="reward-message"></div>
+            <button id="restartButton" class="neon-button">
+                ¡JUGAR DE NUEVO! 🔄
+            </button>
+        </div>
+
+        <div id="detailsButton" class="details-panel">
+            <button id="showDetails" class="info-button">
+                📊 Estadísticas
+            </button>
+            <div id="gameDetails" class="details-content"></div>
+        </div>
     </div>
-    <div class="game-over" id="gameOver">
-        <h2>¡Juego Terminado!</h2>
-        <p>Hamburguesas recolectadas: <span id="finalScore">0</span></p>
-        <button id="restartButton">Jugar de nuevo</button>
-    </div>
-    <div id="detailsButton">
-        <button id="showDetails">🕒 Detalles del último juego</button>
-        <div id="gameDetails" style="display: none;"></div>
-    </div>
-    <audio id="gameMusic" src="juego.mp3" loop></audio>
+
+    <!-- Audio -->
+    <audio id="gameMusic" src="assets/music/game-music.mp3" loop></audio>
+    <audio id="collectSound" src="assets/sfx/collect.mp3"></audio>
+    <audio id="powerupSound" src="assets/sfx/powerup.mp3"></audio>
+    <audio id="levelUpSound" src="assets/sfx/levelup.mp3"></audio>
+    <audio id="crashSound" src="assets/sfx/crash.mp3"></audio>
+
+    <!-- Scripts -->
     <script src="script.js"></script>
 </body>
 </html>
