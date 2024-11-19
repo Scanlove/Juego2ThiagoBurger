@@ -28,12 +28,16 @@ let gameState = {
     maxCombo: 1,
     powerups: [],
     particles: [],
+    shield: false,
+    multiplier: 1,
+    speedBoost: false,
 };
 
 // Configuración de carriles y colores
 const LANES = [-100, 0, 100];
 const LEVEL_COLORS = ['#2f3542', '#57606f', '#ffa502', '#3742fa', '#ff4757', '#2ed573', '#1e90ff', '#5f27cd'];
 const FOOD_EMOJIS = ['🍔', '🌭', '🍗', '🥩', '🍕', '🌮', '🥪', '🍜'];
+const POWERUP_TYPES = ['🛡️', '⚡', '💥', '💰'];
 
 // Recompensas
 const rewards = [
@@ -57,14 +61,15 @@ class Plate {
         this.x = canvas.width / 2;
         this.y = canvas.height - 100;
         this.width = 60;
+        this.color = '#fff';
     }
 
     draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.width / 2, 0, Math.PI * 2);
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = gameState.shield ? '#00ff00' : this.color;
         ctx.fill();
-        ctx.strokeStyle = '#ddd';
+        ctx.strokeStyle = gameState.shield ? '#00ff00' : '#ddd';
         ctx.lineWidth = 3;
         ctx.stroke();
     }
@@ -82,6 +87,7 @@ class Food {
         this.x = canvas.width / 2 + LANES[this.lane];
         this.y = -50;
         this.emoji = FOOD_EMOJIS[Math.floor(Math.random() * FOOD_EMOJIS.length)];
+        this.value = 15;
     }
 
     draw() {
@@ -91,7 +97,7 @@ class Food {
     }
 
     update() {
-        this.y += gameState.speed;
+        this.y += gameState.speed * (gameState.speedBoost ? 1.5 : 1);
     }
 }
 
@@ -111,16 +117,38 @@ class Obstacle {
     }
 
     update() {
+        this.y += gameState.speed * (gameState.speedBoost ? 1.5 : 1);
+    }
+}
+
+// Clase para Power-ups
+class Powerup {
+    constructor() {
+        this.lane = Math.floor(Math.random() * 3);
+        this.x = canvas.width / 2 + LANES[this.lane];
+        this.y = -50;
+        this.type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+    }
+
+    draw() {
+        ctx.font = '32px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.type, this.x, this.y);
+    }
+
+    update() {
         this.y += gameState.speed;
     }
 }
 
 // Manejar eventos de teclado
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft' && gameState.currentLane > 0) {
-        gameState.currentLane--;
-    } else if (e.key === 'ArrowRight' && gameState.currentLane < 2) {
-        gameState.currentLane++;
+    if (gameState.isPlaying) {
+        if (e.key === 'ArrowLeft' && gameState.currentLane > 0) {
+            gameState.currentLane--;
+        } else if (e.key === 'ArrowRight' && gameState.currentLane < 2) {
+            gameState.currentLane++;
+        }
     }
 });
 
@@ -157,6 +185,9 @@ function initGame() {
         maxCombo: 1,
         powerups: [],
         particles: [],
+        shield: false,
+        multiplier: 1,
+        speedBoost: false,
     };
     rewardMessageElement.textContent = '';
 }
@@ -167,13 +198,16 @@ function drawBackground() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-// Generar alimentos y obstáculos
+// Generar alimentos, obstáculos y power-ups
 function spawnEntities() {
     if (Math.random() < 0.02) {
         gameState.foods.push(new Food());
     }
     if (Math.random() < 0.01) {
         gameState.obstacles.push(new Obstacle());
+    }
+    if (Math.random() < 0.005) {
+        gameState.powerups.push(new Powerup());
     }
 }
 
@@ -184,7 +218,36 @@ function checkCollisions() {
         const dist = Math.hypot(food.x - gameState.plate.x, food.y - gameState.plate.y);
         if (dist < gameState.plate.width / 2) {
             collectSound.play();
-            gameState.score += 15;
+            gameState.score += food.value * gameState.multiplier;
+            gameState.combo++;
+            gameState.maxCombo = Math.max(gameState.combo, gameState.maxCombo);
+            return false;
+        }
+        return true;
+    });
+
+    // Colisión con power-ups
+    gameState.powerups = gameState.powerups.filter((powerup) => {
+        const dist = Math.hypot(powerup.x - gameState.plate.x, powerup.y - gameState.plate.y);
+        if (dist < gameState.plate.width / 2) {
+            powerupSound.play();
+            switch (powerup.type) {
+                case '🛡️':
+                    gameState.shield = true;
+                    setTimeout(() => gameState.shield = false, 5000);
+                    break;
+                case '⚡':
+                    gameState.speedBoost = true;
+                    setTimeout(() => gameState.speedBoost = false, 5000);
+                    break;
+                case '💥':
+                    gameState.obstacles = [];
+                    break;
+                case '💰':
+                    gameState.multiplier = 2;
+                    setTimeout(() => gameState.multiplier = 1, 5000);
+                    break;
+            }
             return false;
         }
         return true;
@@ -194,8 +257,12 @@ function checkCollisions() {
     gameState.obstacles.forEach((obstacle) => {
         const dist = Math.hypot(obstacle.x - gameState.plate.x, obstacle.y - gameState.plate.y);
         if (dist < gameState.plate.width / 2) {
-            crashSound.play();
-            gameOver();
+            if (gameState.shield) {
+                gameState.shield = false;
+            } else {
+                crashSound.play();
+                gameOver();
+            }
         }
     });
 }
@@ -207,6 +274,8 @@ function gameOver() {
     gameMusic.pause();
     gameOverScreen.style.display = 'block';
     document.getElementById('finalScore').textContent = gameState.score;
+    document.getElementById('maxCombo').textContent = gameState.maxCombo;
+    document.getElementById('finalLevel').textContent = gameState.level;
 
     const reward = rewards.find((r) => gameState.score >= r.points);
     rewardMessageElement.textContent = reward
@@ -216,8 +285,21 @@ function gameOver() {
 
 // Actualizar el HUD
 function updateHUD() {
-    document.getElementById('score').textContent = `🍔 ${gameState.score}`;
-    document.getElementById('level').textContent = `Nivel ${gameState.level}`;
+    document.getElementById('score').innerHTML = `🍔 ${gameState.score}`;
+    document.getElementById('level').innerHTML = `Nivel ${gameState.level}`;
+    document.getElementById('combo').innerHTML = `Combo x${gameState.combo}`;
+}
+
+// Subir de nivel
+function levelUp() {
+    if (gameState.score >= gameState.level * 500) {
+        levelUpSound.play();
+        gameState.level++;
+        gameState.speed += 1;
+        const powerupElement = document.getElementById('powerups');
+        powerupElement.innerHTML = `🎉 ¡Nivel ${gameState.level}! Velocidad aumentada`;
+        setTimeout(() => powerupElement.innerHTML = '', 2000);
+    }
 }
 
 // Bucle principal del juego
@@ -243,12 +325,19 @@ function gameLoop() {
         obstacle.draw();
     });
 
+    // Dibujar y actualizar power-ups
+    gameState.powerups.forEach((powerup) => {
+        powerup.update();
+        powerup.draw();
+    });
+
     // Generar nuevos elementos y verificar colisiones
     spawnEntities();
     checkCollisions();
 
     // Actualizar la interfaz del usuario
     updateHUD();
+    levelUp();
 
     // Continuar el bucle
     requestAnimationFrame(gameLoop);
