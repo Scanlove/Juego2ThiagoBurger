@@ -169,6 +169,12 @@ function gameOver() {
     gameMusic.pause();
     document.getElementById('finalScore').textContent = gameState.score;
 
+    // Eliminar cualquier mensaje previo de recompensa
+    const existingRewardElement = gameOverScreen.querySelector('.reward-message');
+    if (existingRewardElement) {
+        existingRewardElement.remove();
+    }
+
     // Determinar si el jugador ganó algo según su puntaje
     let rewardMessage = '';
     if (gameState.score >= 3000) {
@@ -180,18 +186,20 @@ function gameOver() {
     } else if (gameState.score >= 800) {
         rewardMessage = "🏅 ¡Ganaste un Vaso de Refresco!";
     } else {
-        rewardMessage = "😢 No alcanzaste un premio esta vez. ¡Inténtalo de nuevo!";
+        rewardMessage = "😢 No alcanzaste al premio MAYOR. ¡Inténtalo de nuevo!";
     }
 
-    // Mostrar mensaje de recompensa (si corresponde)
+    // Crear un nuevo mensaje de recompensa
     const rewardElement = document.createElement('p');
     rewardElement.textContent = rewardMessage;
     rewardElement.style.fontSize = '20px';
     rewardElement.style.color = '#FFD700';
     rewardElement.style.marginTop = '20px';
     rewardElement.style.fontWeight = 'bold';
+    rewardElement.classList.add('reward-message'); // Clase para identificar el mensaje
 
-    gameOverScreen.appendChild(rewardElement); // Agregar el mensaje al cuadro de "Juego Terminado"
+    // Agregar el mensaje al cuadro de "Juego Terminado"
+    gameOverScreen.appendChild(rewardElement);
     gameOverScreen.style.display = 'block';
 
     // Guardar detalles del último juego
@@ -200,6 +208,7 @@ function gameOver() {
     lastGame.time = now.toLocaleTimeString();
     lastGame.score = gameState.score;
 }
+
 
 
 showDetailsButton.addEventListener('click', () => {
